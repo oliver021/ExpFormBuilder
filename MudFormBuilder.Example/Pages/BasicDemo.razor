@@ -1,0 +1,63 @@
+﻿@page "/basic-demo"
+
+<PageTitle>Basic Demo</PageTitle>
+
+<MudText Typo="Typo.h3" GutterBottom="true">Basic Demo</MudText>
+<MudText Class="mb-8">Theses are basic usage demos.</MudText>
+
+ <MudCard>
+        <MudCardContent>
+            <BuildForm SubmitEvent="OnSubmit" SubmitButton="Send" Builder="builder"/>
+        </MudCardContent>
+</MudCard>
+
+<MudMessageBox @ref="mbox" Title="Warning" CancelText="Cancel">
+    <MessageContent>
+        Show basic demo data. 
+        <p>@state</p>
+    </MessageContent>
+    <YesButton>
+        <MudButton 
+            Variant="Variant.Filled" 
+            Color="Color.Success" 
+            StartIcon="@Icons.Material.Filled.Done">
+            Done!
+        </MudButton>
+    </YesButton>
+</MudMessageBox>
+
+@code {
+    MudMessageBox mbox { get; set; } = null;
+
+    string state = string.Empty;
+
+    FormBuilder builder = new();
+
+    protected override void OnInitialized()
+    {
+        builder.Add("username", FormItemType.Text);
+        builder.Add("email", FormItemType.Text);
+        builder.Add("age", FormItemType.Number, i => i.Required().SetColumnSize(3));
+    }
+
+    void OnSubmit(SubmissionResult submission)
+    {
+        state = string.Format("Username: {0}, age: {2};\nemail:{1}",
+        submission.GetString("username"),
+        submission.GetString("email"),
+        submission.GetString("age"));
+
+        // show modal with message
+        Show();
+    }
+
+    private async void Show()
+    {
+        bool? result = await mbox.Show();
+        if (result.HasValue && !result.Value)
+        {
+            Console.WriteLine("Something wrong");
+        }
+        StateHasChanged();
+    }
+}

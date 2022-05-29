@@ -1,0 +1,75 @@
+﻿@page "/large-form"
+
+<PageTitle>Large Form Demo</PageTitle>
+
+<MudText Typo="Typo.h3" GutterBottom="true">Large Form Demo</MudText>
+<MudText Class="mb-8">Theses are basic usage demos.</MudText>
+
+ <MudCard>
+        <MudCardContent>
+            <BuildForm SubmitEvent="OnSubmit" SubmitButton="Send" Builder="builder"/>
+        </MudCardContent>
+</MudCard>
+
+<MudMessageBox @ref="mbox" Title="Warning" CancelText="Cancel">
+    <MessageContent>
+        Show large form demo data. 
+        <p>@state</p>
+    </MessageContent>
+    <YesButton>
+        <MudButton 
+            Variant="Variant.Filled" 
+            Color="Color.Success" 
+            StartIcon="@Icons.Material.Filled.Done">
+            Done!
+        </MudButton>
+    </YesButton>
+</MudMessageBox>
+
+@code {
+    MudMessageBox mbox { get; set; }
+
+    string state = string.Empty;
+
+    FormBuilder builder = new();
+
+    protected override void OnInitialized()
+    {
+        builder.AddRequired("username", FormItemType.Text);
+        builder.AddRequired("email", FormItemType.Text);
+
+        builder.AddRequired("first-name", FormItemType.Text);
+        builder.AddRequired("last-name", FormItemType.Text);
+
+        builder.Add("age", FormItemType.Number);
+        builder.Add("address", FormItemType.Text);
+
+        builder.Add("terms", FormItemType.CheckBox, x => x.SetLabel("I agree with the terms of service.")
+        .SetColumnSize(8));
+    }
+
+    void OnSubmit(SubmissionResult submission)
+    {
+        state = string.Format("{4} {5};Username: {0}, age: {2};\nemail:{1}\naddress:{3}",
+        submission.GetString("username"),
+        submission.GetString("email"),
+        submission.GetInt("age"),
+        submission.GetString("address"),
+        submission.GetString("first-name"),
+        submission.GetString("last-name")
+        );
+
+        // show modal with message
+        Show();
+    }
+
+    private async void Show()
+    {
+        bool? result = await mbox.Show();
+        if (result.HasValue && !result.Value)
+        {
+            Console.WriteLine("Something wrong");
+        }
+        StateHasChanged();
+    }
+}

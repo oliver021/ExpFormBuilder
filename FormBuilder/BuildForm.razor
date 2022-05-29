@@ -1,0 +1,188 @@
+﻿@inherits ComponentBase
+<MudForm @ref="form" 
+    SuppressImplicitSubmission="@(SubmitEvent != null)"
+    @onsubmit="() => SubmitEvent.Invoke(GetSubmissions())">
+
+    @*Grid for items form*@
+    <MudGrid>
+        @foreach(FormItem item in Builder.GetForm())
+        {
+           <MudItem xs="12" sm="6" md="@item.ColumnSize">
+               @switch (@item.Type)
+                {
+                    case FormItemType.Text:
+                            <MudTextField 
+                            T="string" 
+                
+                            ValueChanged="@((value) => pairs[item.Name] = value)"
+                            Value="(string) pairs[item.Name] "
+                
+                            Label="@item.Label"
+
+                            Required="item.IsRequired" 
+                            RequiredError="@item.RequiredError"/>
+                        break;
+
+                    case FormItemType.Number:
+                            <MudNumericField
+                            T="decimal"
+                            Value="pairs[item.Name] is decimal ? (decimal)pairs[item.Name] : 0"
+                            ValueChanged="@((value) => pairs[item.Name] = value)"
+                            Label="@item.Label"
+                            Variant="Variant.Text"/>
+                        break;
+
+                    case FormItemType.Password:
+                            <MudTextField  
+                            T="string"
+                            ValueChanged="@((value) => pairs[item.Name] = value)"
+                            Value="(string) pairs[item.Name] "
+                            InputType="InputType.Password"
+                            Label="@item.Label"
+                            Required="item.IsRequired"
+                            RequiredError="@item.RequiredError"/>
+                        break;
+
+                    case FormItemType.CheckBox:
+                        <MudCheckBox 
+                            Required="@item.IsRequired"
+                            RequiredError="@item.RequiredError"
+                            Label="@item.Label" 
+                            @bind-Checked="@pairs[item.Name]"/>
+                        break;
+
+                    case FormItemType.Switch:
+                            <MudSwitch 
+                            Label="@item.Label"
+                            Color="Color.Success" 
+                            T="bool"
+                            CheckedChanged="@((value) => pairs[item.Name] = value)"
+                            Checked="@((bool)(pairs[item.Name]) == true)"
+                            />
+                        break;
+                    }
+            </MudItem>
+        }
+        @* optional included submit *@
+        @if (SubmitButton != string.Empty)
+        {
+            <MudItem xs="12" sm="12" md=12>
+                <MudButton 
+                    ButtonType="ButtonType.Submit" 
+                    Variant="SubmitVariantButton" 
+                    Color="SubmitColor"
+                    Class="ml-auto">@SubmitButton
+                </MudButton>
+            </MudItem>
+        }
+    </MudGrid>
+    
+</MudForm>
+
+
+@code {
+    /// <summary>
+    /// Builder instance.
+    /// </summary>
+    [Parameter]
+    public IFormBuilder Builder { get; set; }
+
+    /// <summary>
+    /// Set default column size for non set size.
+    /// </summary>
+    [Parameter]
+    public int DefaultColumnSize { get; set; } = 4;
+
+    /// <summary>
+    /// The submit button text. If is not set then the submit button not appear.
+    /// </summary>
+    [Parameter]
+    public string SubmitButton { get; set; } = string.Empty;
+
+    /// <summary>
+    /// The submit button color.
+    /// </summary>
+    [Parameter]
+    public Color SubmitColor { get; set; } = Color.Primary;
+
+    /// <summary>
+    /// The submit button variant.
+    /// </summary>
+    [Parameter]
+    public Variant SubmitVariantButton { get; set; } = Variant.Filled;
+
+    /// <summary>
+    /// Submit result callback.
+    /// </summary>
+    [Parameter]
+    public Action<SubmissionResult> SubmitEvent { get; set; } = null;
+
+    Dictionary<string, object> pairs = new();
+    MudForm form;
+
+
+    protected override void OnInitialized()
+    {
+        SetDefaultValues();
+    }
+
+    void SetDefaultValues()
+    {
+        foreach (FormItem item in Builder.GetForm())
+        {
+            if ((item.Label is "") || string.IsNullOrWhiteSpace(item.Label))
+            {
+                item.Label = item.Name;
+            }
+            if (item.ColumnSize == -1)
+            {
+                FixDefaultSizes(item);
+            }
+
+            switch (item.Type)
+            {
+                case FormItemType.Text:
+                case FormItemType.Select:
+                case FormItemType.Password:
+                case FormItemType.RadioButton:
+                    pairs[item.Name] = (item.DefaultValue != null) ? (item.DefaultValue) : "";
+                    break;
+
+                case FormItemType.Number:
+                    pairs[item.Name] = (item.DefaultValue != null) ? (item.DefaultValue) : (decimal)0;
+                    break;
+
+                case FormItemType.Switch:
+                case FormItemType.CheckBox:
+                    pairs[item.Name] = item.DefaultValue.ToString() == "true" ? true : false;
+                    break;
+
+                default:
+                    pairs[item.Name] = (item.DefaultValue != null) ? (item.DefaultValue) : null;
+                    break;
+            }
+        }
+    }
+
+    void FixDefaultSizes(FormItem item)
+    {
+        if (
+            item.Type is FormItemType.Text || item.Type is FormItemType.Select ||
+            item.Type is FormItemType.Password || item.Type is FormItemType.TextArray)
+        {
+            item.ColumnSize = 6;
+        }else if (item.Type == FormItemType.TextArea)
+        {
+            item.ColumnSize = 10;
+        }
+        else
+        {
+            item.ColumnSize = DefaultColumnSize;
+        }
+    }
+
+    SubmissionResult GetSubmissions()
+    {
+        return new SubmissionResult(pairs);
+    }
+}

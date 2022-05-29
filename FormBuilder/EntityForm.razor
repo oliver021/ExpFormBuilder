@@ -1,0 +1,64 @@
+﻿@typeparam T
+@inherits ComponentBase
+
+<BuildForm 
+Builder="Builder"
+SubmitButton="@SubmitButton" 
+SubmitColor="SubmitColor" 
+SubmitVariantButton="SubmitVariantButton"
+SubmitEvent="subimission => SubmitHandler(new SubmissionResult<T>(subimission))"
+/>
+
+@code {
+    /// <summary>
+    /// Builder instance.
+    /// </summary>
+    [Parameter]
+    public FormBuilder<T> Builder { get; set; }
+
+    /// <summary>
+    /// Set default column size for non set size.
+    /// </summary>
+    [Parameter]
+    public int DefaultColumnSize { get; set; } = 4;
+
+    /// <summary>
+    /// The submit button text. If is not set then the submit button not appear.
+    /// </summary>
+    [Parameter]
+    public string SubmitButton { get; set; } = string.Empty;
+
+    /// <summary>
+    /// The submit button color.
+    /// </summary>
+    [Parameter]
+    public Color SubmitColor { get; set; } = Color.Primary;
+
+    /// <summary>
+    /// The submit button variant.
+    /// </summary>
+    [Parameter]
+    public Variant SubmitVariantButton { get; set; } = Variant.Filled;
+
+    /// <summary>
+    /// Event to handle onSubmit event.
+    /// </summary>
+    [Parameter]
+    public Action<SubmissionResult<T>> SubmitEvent { get; set; } = null;
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+
+        // set all public member suitable
+        Builder.AllPublics();
+    }
+
+    void SubmitHandler(SubmissionResult<T> result)
+    {
+        if (SubmitEvent != null)
+        {
+            SubmitEvent.Invoke(result);
+        }
+    }
+}

@@ -1,0 +1,22 @@
+﻿@page "/entity-usage2"
+
+
+
+ <MudText>Not yet</MudText>
+
+@code {
+
+    FormBuilder builder = new();
+
+    protected override void OnInitialized()
+    {
+        builder.Add("username", FormItemType.Text);
+        builder.Add("email", FormItemType.Text);
+        builder.Add("age", FormItemType.Number, i => i.Required().SetColumnSize(3));
+    }
+
+    void OnSubmit(SubmissionResult submission)
+    {
+        Console.WriteLine(submission.GetString("username"));
+    }
+}

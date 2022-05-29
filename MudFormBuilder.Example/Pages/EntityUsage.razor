@@ -1,0 +1,64 @@
+﻿@page "/entity-usage"
+@using MudFormBuilder.Example.Models
+
+<PageTitle>Entity Usage</PageTitle>
+
+<MudText Typo="Typo.h3" GutterBottom="true">Entity Usage</MudText>
+<MudText Class="mb-8">Theses are basic usage demos.</MudText>
+
+ <MudCard>
+        <MudCardContent>
+            <EntityForm T="ShortUserDetails" SubmitEvent="OnSubmit" SubmitButton="Send" Builder="builder"/>
+        </MudCardContent>
+</MudCard>
+
+<MudMessageBox @ref="mbox" Title="Warning" CancelText="Cancel">
+    <MessageContent>
+        Show basic entity demo data. 
+        <p>@state</p>
+    </MessageContent>
+    <YesButton>
+        <MudButton 
+            Variant="Variant.Filled" 
+            Color="Color.Success" 
+            StartIcon="@Icons.Material.Filled.Done">
+            Done!
+        </MudButton>
+    </YesButton>
+</MudMessageBox>
+
+@code {
+    MudMessageBox mbox { get; set; } = null;
+
+    string state = string.Empty;
+
+    FormBuilder<ShortUserDetails> builder = new();
+
+    protected override void OnInitialized()
+    {
+       // builder.AllPublics();
+    }
+
+    void OnSubmit(SubmissionResult<ShortUserDetails> submission)
+    {
+        var entity = submission.Result;
+
+
+        state = string.Format("Details: user:{0}, email: {1}; age: {2}",
+        entity.UserName,
+        entity.UserEmail,
+        entity.Age);
+        // show modal with message
+        Show();
+    }
+
+    private async void Show()
+    {
+        bool? result = await mbox.Show();
+        if (result.HasValue && !result.Value)
+        {
+            Console.WriteLine("Something wrong");
+        }
+        StateHasChanged();
+    }
+}
